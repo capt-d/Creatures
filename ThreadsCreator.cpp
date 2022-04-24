@@ -1,12 +1,10 @@
 #include "ThreadsCreator.hpp"
-#include <QtWidgets/QMessageBox>
-#include <cmath>
+//#include <cmath>
 
 
 ThreadsCreator::ThreadsCreator(std::mutex &_cycle_mutex, unsigned int _count):cycle_mutex(_cycle_mutex)
 {
   threads_count = 0;
-  threads_classes.clear();
   setThreadsCount(_count);
 }
 
@@ -36,28 +34,25 @@ unsigned int ThreadsCreator::setThreadsCount(unsigned int _count)
     for (unsigned int i = 0; i < _count; i++)
       threads_classes.emplace_back(new ThreadsClass);
 
-	threads_count = _count;
+    threads_count = _count;
   }
   catch(std::exception &e)
   {
     threads_classes.clear();
     threads_count = 0;
-	QMessageBox msg;
-		msg.setText("no memory for ThreadsClass");
-		msg.exec();
   }  
   return threads_count; 
 }
 
 const std::vector<ThreadsCreator::ThreadsLocks> ThreadsCreator::setThreadsParams(const std::vector<ThreadsCreator::ThreadsData> &_params_vect)
 {
-	
-  if (_params_vect.capacity() != threads_count)
-    throw std::runtime_error("wrong capacity");
+  if (_params_vect.size() != threads_count)
+    throw std::runtime_error("wrong size");
   
   for(unsigned int i = 0; i < threads_count; i++)
        threads_classes[i].thread_data = _params_vect[i];
-  std::vector<ThreadsCreator::ThreadsLocks> locks(threads_count);
+  std::vector<ThreadsCreator::ThreadsLocks> locks;
+  locks.reserve(threads_count);
   for (auto & _data : threads_classes)
     locks.emplace_back(_data.thread_locks);
   return locks;
